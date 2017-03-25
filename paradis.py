@@ -89,7 +89,7 @@ async def card(ctx,*,name:str):
     await bot.delete_message(ctx.message)
     async with aiohttp.ClientSession() as client:
         async with client.get('https://api.agora.gg/gamedata/cards?lc=en&ssl=true') as resp:
-            json_data=await resp.json()
+            json_data=await resp.json(encoding='utf-8')
             for card in json_data['data']:
                 if name == card['name']:
                     slotType =card['slotType']
@@ -97,17 +97,20 @@ async def card(ctx,*,name:str):
                     rarity = card['rarity']
                     affinity = card['affinity']
                     effects = "\n\t".join(["{}: {}".format(*sorted(effect.values(), key=str, reverse=True)) for effect in card['effects']])
-                    maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
+                    if not card['maxedEffects']:
+                        maxedEffects = 'none'
+                    else:
+                        maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
                     icon = card['icon']
                     image = "https://static.agora.gg/cards/{}.jpg".format(icon)
             await bot.say("{image}\n```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(image=image,name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
 
 @bot.command(pass_context=True)
-async def karta(ctx,*,name:str):
+async def karta(ctx,*,name):
     await bot.delete_message(ctx.message)
     async with aiohttp.ClientSession() as client:
         async with client.get('https://api.agora.gg/gamedata/cards?lc=pl&ssl=true') as resp:
-            json_data=await resp.json()
+            json_data=await resp.json(encoding='utf-8')
             for card in json_data['data']:
                 if name == card['name']:
                     slotType =card['slotType']
@@ -115,7 +118,10 @@ async def karta(ctx,*,name:str):
                     rarity = card['rarity']
                     affinity = card['affinity']
                     effects = "\n\t".join(["{}: {}".format(*sorted(effect.values(), key=str, reverse=True)) for effect in card['effects']])
-                    maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
+                    if not card['maxedEffects']:
+                        maxedEffects = 'brak'
+                    else:
+                        maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
                     icon = card['icon']
                     image = "https://static.agora.gg/cards/{}.jpg".format(icon)
             await bot.say("{image}\n```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(image=image,name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
