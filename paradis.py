@@ -91,7 +91,8 @@ async def card(ctx,*,name:str):
         async with client.get('https://api.agora.gg/gamedata/cards?lc=en&ssl=true') as resp:
             json_data=await resp.json(encoding='utf-8')
             for card in json_data['data']:
-                if name == card['name']:
+                if name.casefold() == card['name'].casefold():
+                    name = card['name']
                     slotType =card['slotType']
                     cost = card['cost']
                     rarity = card['rarity']
@@ -101,9 +102,12 @@ async def card(ctx,*,name:str):
                         maxedEffects = 'none'
                     else:
                         maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
-                    icon = card['icon']
-                    image = "https://static.agora.gg/cards/{}.jpg".format(icon)
-            await bot.say("{image}\n```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(image=image,name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
+            try:
+                cost
+            except:
+                await bot.say("Card not found: {}".format(name))
+            else: 
+                await bot.say("```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
 
 @bot.command(pass_context=True)
 async def karta(ctx,*,name):
@@ -112,8 +116,9 @@ async def karta(ctx,*,name):
         async with client.get('https://api.agora.gg/gamedata/cards?lc=pl&ssl=true') as resp:
             json_data=await resp.json(encoding='utf-8')
             for card in json_data['data']:
-                if name == card['name']:
-                    slotType =card['slotType']
+                if name.casefold() == card['name'].casefold():
+                    name = card['name']
+                    slotType = card['slotType']
                     cost = card['cost']
                     rarity = card['rarity']
                     affinity = card['affinity']
@@ -122,9 +127,12 @@ async def karta(ctx,*,name):
                         maxedEffects = 'brak'
                     else:
                         maxedEffects = "\n\t".join(["{}: {}".format(*sorted(meffect.values(), key=str, reverse=True)) for meffect in card['maxedEffects']])
-                    icon = card['icon']
-                    image = "https://static.agora.gg/cards/{}.jpg".format(icon)
-            await bot.say("{image}\n```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(image=image,name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
+            try:
+                cost
+            except:
+                await bot.say("Nie znaleziono karty: {}".format(name))
+            else:
+                await bot.say("```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
 
 @bot.command(pass_context=True)
 async def h(ctx): 
