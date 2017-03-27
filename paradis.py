@@ -135,9 +135,37 @@ async def karta(ctx,*,name):
                 await bot.say("```Name: {name}\nCost: {cost}\nType: {slotType}\nRarity: {rarity}\nAffinity: {affinity}\nEffects:\n {effects}\n\nFull upgrade bonus:\n {maxedEffects}```".format(name=name,cost=cost,slotType=slotType,rarity=rarity,affinity=affinity,effects=effects,maxedEffects=maxedEffects))
 
 @bot.command(pass_context=True)
+async def hero(ctx,*,name:str):
+    await bot.delete_message(ctx.message)
+    async with aiohttp.ClientSession() as client:
+        async with client.get('https://api.agora.gg/gamedata/heroes?lc=en&ssl=true') as resp1:
+            json_data1=await resp1.json(encoding='utf-8')
+            for chemp in json_data1['data']:
+                if name.casefold() == chemp['name'].casefold():
+                    heroID = chemp['id']
+                    async with client.get('https://api.agora.gg/gamedata/heroes/{}?lc=pl&ssl=true'.format(heroID)) as resp2:
+                        hone=await resp2.json(encoding='utf-8')
+                        name = hone['data']['name']
+                        attack = hone['data']['attack']
+                        affinity1 = hone['data']['affinity1']
+                        affinity2 = hone['data']['affinity2']
+                        damageType = hone['data']['damageType']
+                        abilities = []
+                        for skill in hone['data']['abilities']:
+                            sname = skill['name']
+                            desc = skill['description']
+                            abilities.append(': '.join((str(sname), str(desc))))
+            try:
+                 heroID
+            except:
+                await bot.say("Hero not found: {}".format(name))
+            else:
+                await bot.say("```Name: {name}\nAttack: {attack}\nAffinity: {affinity1} {affinity2}\nDamage: {damageType}\n\nAbilities:\n 1. {skill1}\n\n 2. {skill2}\n\n 3. {skill3}\n\n 4. {skill4}\n\n 5. {skill5}```".format(name=name,attack=attack,affinity1=affinity1,affinity2=affinity2,damageType=damageType,skill1=abilities[0],skill2=abilities[1],skill3=abilities[2],skill4=abilities[3],skill5=abilities[4]))
+
+@bot.command(pass_context=True)
 async def h(ctx): 
     await bot.delete_message(ctx.message)
-    await bot.say("```Bot commands available:\n\n!h - List of commands\n!elo  <player name> - Shows player stats (usage ex: !elo Andrzej)\n!card <card name>  - Cards info (usage ex: !card Quantum Casing\n!card <card name>  - Cards PL (usage ex: !karta Skorupa kwantowa\n!ARAM - Generate hero assignment for 5/5 game\n\nHopefully more commands show up shortly ;)```".format(ctx.message))
+    await bot.say("```Bot commands available:\n\n!h - List of commands\n\n!elo  <player name> - Player stats (usage ex: !elo Andrzej)\n\n!card <card name>  - Cards info (ex: !card Quantum Casing)\n\n!karta <card name>  - Cards PL (ex: !karta Skorupa kwantowa)\n\n!hero <hero name>  - Hero overview (usage ex: !hero Gideon)\n\n!ARAM - Generate hero assignment for 5/5 game\n```".format(ctx.message))
 
 if __name__ == "__main__":
     bot.run('token')
