@@ -24,6 +24,9 @@ async def hello(ctx):
 
 @bot.command(pass_context=True)
 async def ARAM(ctx):
+    REQUIRED_PLAYERS_NUMBER = 10
+
+
     await bot.delete_message(ctx.message)
     async with aiohttp.ClientSession() as client:
         async with client.get('https://api.agora.gg/gamedata/heroes?lc=en&ssl=true') as resp:
@@ -31,38 +34,50 @@ async def ARAM(ctx):
             heroes = []
             for obj in data["data"]:
                 heroes.append(obj["name"])
-            #await bot.say(str(heroes))
+            random.shuffle(heroes)
             chan=ctx.message.author.voice_channel
             players=chan.voice_members.copy()
             players=list(i.mention for i in players)
-            if len(players)>10:
+            if len(players) < REQUIRED_PLAYERS_NUMBER:
+                await bot.say("Not enough players in {}".format(chan))
+                return
+            if len(players) > REQUIRED_PLAYERS_NUMBER:
                 await bot.say("Too many players in {}".format(chan))
                 return
-            if len(players)<10:
-                for i in range(len(players)+1, 11):
-                    players.append("Player {}".format(i))
-                    hero10=random.sample([heroes,10])
-                    team1=random.sample(players, 5)
-                    team2=[item for item in players if item not in team1]
-                    bundle=[]
-                    for i in team1:
-                        bundle.append([i,hero10[players.index(i)]])
-                    for i in team2:
-                        bundle.append([i,hero10[players.index(i)]])
-                    await bot.say(
-                    "TEAM 1:\n"+
-                    "{} - {}\n".format(bundle[0][0],bundle[0][1])+
-                    "{} - {}\n".format(bundle[1][0],bundle[1][1])+
-                    "{} - {}\n".format(bundle[2][0],bundle[2][1])+
-                    "{} - {}\n".format(bundle[3][0],bundle[3][1])+
-                    "{} - {}\n\n".format(bundle[4][0],bundle[4][1])+
-                    "TEAM 2:\n"+
-                    "{} - {}\n".format(bundle[5][0],bundle[5][1])+
-                    "{} - {}\n".format(bundle[6][0],bundle[6][1])+
-                    "{} - {}\n".format(bundle[7][0],bundle[7][1])+
-                    "{} - {}\n".format(bundle[8][0],bundle[8][1])+
-                    "{} - {}\n".format(bundle[9][0],bundle[9][1]))
-        
+            else:
+                random.shuffle(players)
+                players_board = list(zip(players, heroes))
+                team1, team2 = split_list(players_board)
+                msg_string = create_msg_from_teams((team1, team2))
+                await bot.say("__**Game ARAM:**__" + msg_string)
+
+def split_list(input_list):
+    half = int(len(input_list)/2)
+    return input_list[0:half], input_list[half:]
+
+def newline_decorate(func):
+    def func_wrapper(teams):
+        return "\n\n{}\n\n".format(func(teams))
+    return func_wrapper
+
+@newline_decorate
+def create_msg_from_teams(teams):
+    output_strings = []
+    for index, team in enumerate(teams, 1):
+        team_string = create_team_string(team)
+        team_output_string = team_string.format(number=index)
+        output_strings.append(team_output_string)
+    return "\n".join(output_strings)
+    
+def create_team_string(team):
+    output = ["TEAM {number}"]
+    for player in team:
+        output.append("{name}:\t{hero}".format(name=player[0], hero=player[1]))
+    return "\n".join(output)
+
+def to_markdown(msg_string):
+    return '```' + msg_string + '```'
+    
 @bot.command(pass_context=True)
 async def elo(ctx,*,name:str):
     await bot.delete_message(ctx.message)
