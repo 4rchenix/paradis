@@ -6,7 +6,7 @@ import json
 import re
 import requests
 
-description="A bot written by Omninaut IX for the Paragon section of Marauder Clan"
+description="A bot written by 4rcheniX inspired by Omninaut IX"
 client=discord.Client()
 bot=commands.Bot(command_prefix="!")
 
